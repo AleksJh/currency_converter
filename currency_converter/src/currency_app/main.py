@@ -75,11 +75,13 @@ def main():
 
     api_key = load_api_key()
     needed_currencies = {from_cur, to_cur}
+    # We are on the free plan which means only USD is supported as the base currency.
+    # So to convert x to y, we need to covert x->USD, then USD->y.
     if "USD" not in needed_currencies:
         needed_currencies.add("USD")
 
     rates = get_exchange_rates(api_key, needed_currencies)
-    result = convert(from_cur, to_cur, rates)
+    result = convert(from_cur, to_cur, amount, rates)
 
     print(f'\n{amount} {from_cur} = {result} {to_cur}')
 
