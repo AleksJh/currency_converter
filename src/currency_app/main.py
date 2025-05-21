@@ -10,6 +10,7 @@ VALID_CURRENCY_CODES = {
 API_URL = "https://api.currencylayer.com/live"
 
 def load_api_key():
+    # python-dotenv reads key-value pairs from a .env file and can set them as environment variables.
     load_dotenv()
     key = os.getenv("CURRENCYLAYER_API_KEY")
     if not key:
@@ -37,10 +38,13 @@ def get_exchange_rates(api_key, currencies):
 
 
 def validate_currency(code):
+    # TODO: Add all currencies to validation, after convert() will be fixed
     return code.upper() in VALID_CURRENCY_CODES
 
 
 def convert(from_cur, to_cur, amount, rates):
+    # FIXME: raise ValueError(f"No rate for USD -> {to_cur}")
+    #   ValueError: No rate for USD -> USD
     if from_cur == "USD":
         usd_amount = amount
     else:
@@ -90,6 +94,7 @@ if __name__ == "__main__":
     main()
 
 
-
+# FIXME: One of two parent directories is excess
+# TODO: Add historic data
 
 
