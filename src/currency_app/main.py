@@ -4,13 +4,16 @@ import sys
 import requests
 
 VALID_CURRENCY_CODES = {
-    "USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "CNY", "RUB", "INR", "BRL", "TRY"
+    "USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "CNY", "RUB", "INR",
+    "BRL", "TRY"
 }
 
 API_URL = "https://api.currencylayer.com/live"
 
+
 def load_api_key():
-    # python-dotenv reads key-value pairs from a .env file and can set them as environment variables.
+    # python-dotenv reads key-value pairs from a .env file and can set
+    # them as environment variables.
     load_dotenv()
     key = os.getenv("CURRENCYLAYER_API_KEY")
     if not key:
@@ -30,7 +33,9 @@ def get_exchange_rates(api_key, currencies):
         response = requests.get(API_URL, params=params, timeout=10)
         data = response.json()
         if not data.get("success", False):
-            raise ValueError(data.get("error", {}).get("info", "Unknown error"))
+            raise ValueError(data.get("error", {}).get(
+                "info", "Unknown error")
+            )
         return data["quotes"]
     except Exception as e:
         print(f'Failed to get exchange rates: {e}')
@@ -48,8 +53,9 @@ def convert(from_cur, to_cur, amount, rates):
     if from_cur == "USD":
         usd_amount = amount
     else:
-        # We are on the free plan which means only USD is supported as the base currency.
-        # So to convert x to y, we need to covert x->USD, then USD->y.
+        # We are on the free plan which means only USD is supported as
+        # the base currency. So to convert x to y, we need to convert
+        # x->USD, then USD->y.
         rate = rates.get("USD"+from_cur)
         if not rate:
             raise ValueError(f"No rate for USD -> {from_cur}")
@@ -79,8 +85,9 @@ def main():
 
     api_key = load_api_key()
     needed_currencies = {from_cur, to_cur}
-    # We are on the free plan which means only USD is supported as the base currency.
-    # So to convert x to y, we need to covert x->USD, then USD->y.
+    # We are on the free plan which means only USD is supported as
+    # the base currency. So to convert x to y, we need to convert
+    # x->USD, then USD->y.
     if "USD" not in needed_currencies:
         needed_currencies.add("USD")
 
@@ -94,7 +101,8 @@ if __name__ == "__main__":
     main()
 
 
-# FIXME: One of two parent directories is excess
 # TODO: Add historic data
 
-
+# TODO: Github doesn't pull up the .env file. We need to come up with a script
+#  for this situation, with a check for the presence
+#  and a suggestion to enter the API key there.
