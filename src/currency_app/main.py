@@ -5,7 +5,7 @@ import sys
 import requests
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s)",
     handlers=[
         logging.FileHandler("currency_converter.log"),
@@ -13,12 +13,16 @@ logging.basicConfig(
     ]
 )
 
-VALID_CURRENCY_CODES = {
-    "USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "CNY", "RUB", "INR",
-    "BRL", "TRY"
-}
+VALID_CURRENCY_CODES = set()
 
 API_URL = "https://api.currencylayer.com/live"
+
+
+def valid_currency_codes_update():
+    from secondary import parse_currency_codes_from_html
+    new_codes = parse_currency_codes_from_html('cl-currencies-table.txt')
+    VALID_CURRENCY_CODES.update(new_codes)
+    logging.debug(f"Function finished. Added {len(new_codes)} new codes.")
 
 
 def load_api_key():
@@ -60,7 +64,6 @@ def get_exchange_rates(api_key, currencies):
 
 
 def validate_currency(code):
-    # TODO: Add all currencies to validation, after convert() will be fixed
     logging.debug(f"Validating currency: {code}")
     return code.upper() in VALID_CURRENCY_CODES
 
@@ -111,6 +114,10 @@ def convert(from_cur, to_cur, amount, rates):
 def main():
     logging.info("Started currency converter")
     print("Aleksan's Currency Converter (using data from currencylayer.com)\n")
+
+    logging.info('Updating available currencies set')
+    valid_currency_codes_update()
+    print('The set of currencies updated')
 
     from_cur = input('From currency (e.g. EUR): ').upper()
     to_cur = input('To currency (e.g. GBP): ').upper()
