@@ -1,7 +1,17 @@
 from dotenv import load_dotenv
+import logging
 import os
 import sys
 import requests
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(message)s)",
+    handlers=[
+        logging.FileHandler("currency_converter.log"),
+        logging.StreamHandler()
+    ]
+)
 
 VALID_CURRENCY_CODES = {
     "USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "CNY", "RUB", "INR",
@@ -12,17 +22,21 @@ API_URL = "https://api.currencylayer.com/live"
 
 
 def load_api_key():
+    logging.debug("Attempting to load API key from .env")
     # python-dotenv reads key-value pairs from a .env file and can set
     # them as environment variables.
     load_dotenv()
     key = os.getenv("CURRENCYLAYER_API_KEY")
     if not key:
+        logging.error("API key not found. Exiting.")
         print('API key not found. Please set it in a .env file.')
         sys.exit(1)
+    logging.info("API key loaded successfully")
     return key
 
 
 def get_exchange_rates(api_key, currencies):
+    logging.info(f"Getting rates for: {currencies}")
     params = {
         "access_key": api_key,
         "currencies": ','.join(currencies),
@@ -30,26 +44,31 @@ def get_exchange_rates(api_key, currencies):
     }
 
     try:
+        logging.info(f"Requesting exchange rates for: {currencies}")
         response = requests.get(API_URL, params=params, timeout=10)
         data = response.json()
         if not data.get("success", False):
-            raise ValueError(data.get("error", {}).get(
-                "info", "Unknown error")
-            )
+            error_info = data.get("error", {}).get("info", "Unknown error")
+            logging.error(f"API returned error: {error_info}")
+            raise ValueError(error_info)
+        logging.info("Exchange rates received successfully.")
         return data["quotes"]
     except Exception as e:
+        logging.exception("Failed while fetching exchange rates")
         print(f'Failed to get exchange rates: {e}')
         sys.exit(1)
 
 
 def validate_currency(code):
     # TODO: Add all currencies to validation, after convert() will be fixed
+    logging.debug(f"Validating currency: {code}")
     return code.upper() in VALID_CURRENCY_CODES
 
 
 def convert(from_cur, to_cur, amount, rates):
     # FIXME: raise ValueError(f"No rate for USD -> {to_cur}")
     #   ValueError: No rate for USD -> USD
+    logging.debug(f"Converting {amount} {from_cur} {to_cur}")
     if from_cur == "USD":
         usd_amount = amount
     else:
@@ -58,10 +77,12 @@ def convert(from_cur, to_cur, amount, rates):
         # x->USD, then USD->y.
         rate = rates.get("USD"+from_cur)
         if not rate:
+            logging.error(f"Missing exchange rate for USD -> {from_cur}")
             raise ValueError(f"No rate for USD -> {from_cur}")
         usd_amount = amount / rate
 
     to_rate = rates.get("USD"+to_cur)
+
     if not to_rate:
         raise ValueError(f"No rate for USD -> {to_cur}")
 
@@ -69,6 +90,7 @@ def convert(from_cur, to_cur, amount, rates):
 
 
 def main():
+    logging.info("Started currency converter")
     print("Aleksan's Currency Converter (using data from currencylayer.com)\n")
 
     from_cur = input('From currency (e.g. EUR): ').upper()
