@@ -6,7 +6,7 @@ import requests
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s)",
+    format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
         logging.FileHandler("currency_converter.log"),
         logging.StreamHandler()
@@ -93,9 +93,7 @@ def convert(from_cur, to_cur, amount, rates):
         return round(amount / from_rate, 2)
 
     # other -> other
-    # We are on the free plan which means only USD is supported as
-    # the base currency. So to convert x to y, we need to convert
-    # x->USD, then USD->y.
+    # x -> y : x->USD, then USD->y
     logging.info("Other to other (not USD)")
     from_rate = rates.get("USD"+from_cur)
     to_rate = rates.get("USD"+to_cur)
@@ -133,9 +131,7 @@ def main():
 
     api_key = load_api_key()
     needed_currencies = {from_cur, to_cur}
-    # We are on the free plan which means only USD is supported as
-    # the base currency. So to convert x to y, we need to convert
-    # x->USD, then USD->y.
+    # x -> y : x->USD, then USD->y.
     if "USD" not in needed_currencies:
         needed_currencies.add("USD")
 
