@@ -66,26 +66,45 @@ def validate_currency(code):
 
 
 def convert(from_cur, to_cur, amount, rates):
-    # FIXME: raise ValueError(f"No rate for USD -> {to_cur}")
-    #   ValueError: No rate for USD -> USD
     logging.debug(f"Converting {amount} {from_cur} {to_cur}")
+    if from_cur == to_cur:
+        logging.info("Same currency, returning successfully")
+        return round(amount, 2)
+
     if from_cur == "USD":
-        usd_amount = amount
-    else:
-        # We are on the free plan which means only USD is supported as
-        # the base currency. So to convert x to y, we need to convert
-        # x->USD, then USD->y.
-        rate = rates.get("USD"+from_cur)
-        if not rate:
-            logging.error(f"Missing exchange rate for USD -> {from_cur}")
-            raise ValueError(f"No rate for USD -> {from_cur}")
-        usd_amount = amount / rate
+        logging.info('from_cur == "USD":')
+        to_rate = rates.get("USD"+to_cur)
+        if not to_rate:
+            logging.exception(f'No rate for USD -> {to_cur}')
+            raise ValueError(f'No rate for USD -> {to_cur}')
+        logging.info(f'Converted from USD to {to_cur} successfully')
+        return round(amount*to_rate, 2)
 
+    if to_cur == "USD":
+        logging.info('to_cur == "USD"')
+        from_rate = rates.get("USD"+from_cur)
+        if not from_rate:
+            logging.exception(f"No rate for USD -> {from_rate}")
+            raise ValueError(f"No rate for USD -> {from_rate}")
+        logging.info(f'Converted from {from_cur} to USD successfully')
+        return round(amount / from_rate, 2)
+
+    # other -> other
+    # We are on the free plan which means only USD is supported as
+    # the base currency. So to convert x to y, we need to convert
+    # x->USD, then USD->y.
+    logging.info("Other to other (not USD)")
+    from_rate = rates.get("USD"+from_cur)
     to_rate = rates.get("USD"+to_cur)
-
+    if not from_rate:
+        logging.exception(f'No rate for USD -> {from_cur}')
+        raise ValueError(f"No rate for USD -> {from_cur}")
     if not to_rate:
+        logging.exception(f'No rate for USD -> {to_cur}')
         raise ValueError(f"No rate for USD -> {to_cur}")
 
+    usd_amount = amount / from_rate
+    logging.info(f"Converted {from_cur} to {to_cur} successfully")
     return round(usd_amount * to_rate, 2)
 
 
