@@ -40,7 +40,7 @@ def load_api_key():
 
 
 def get_exchange_rates(api_key, currencies):
-    logging.info(f"Getting rates for: {currencies}")
+    logging.debug(f"Getting rates for: {currencies}")
     params = {
         "access_key": api_key,
         "currencies": ','.join(currencies),
@@ -48,7 +48,7 @@ def get_exchange_rates(api_key, currencies):
     }
 
     try:
-        logging.info(f"Requesting exchange rates for: {currencies}")
+        logging.debug(f"Requesting exchange rates for: {currencies}")
         response = requests.get(API_URL, params=params, timeout=10)
         data = response.json()
         if not data.get("success", False):
@@ -71,11 +71,11 @@ def validate_currency(code):
 def convert(from_cur, to_cur, amount, rates):
     logging.debug(f"Converting {amount} {from_cur} {to_cur}")
     if from_cur == to_cur:
-        logging.info("Same currency, returning successfully")
+        logging.debug("Same currency, returning successfully")
         return round(amount, 2)
 
     if from_cur == "USD":
-        logging.info('from_cur == "USD":')
+        logging.debug('from_cur == "USD":')
         to_rate = rates.get("USD"+to_cur)
         if not to_rate:
             logging.exception(f'No rate for USD -> {to_cur}')
@@ -84,7 +84,7 @@ def convert(from_cur, to_cur, amount, rates):
         return round(amount*to_rate, 2)
 
     if to_cur == "USD":
-        logging.info('to_cur == "USD"')
+        logging.debug('to_cur == "USD"')
         from_rate = rates.get("USD"+from_cur)
         if not from_rate:
             logging.exception(f"No rate for USD -> {from_rate}")
@@ -94,7 +94,7 @@ def convert(from_cur, to_cur, amount, rates):
 
     # other -> other
     # x -> y : x->USD, then USD->y
-    logging.info("Other to other (not USD)")
+    logging.debug("Other to other (not USD)")
     from_rate = rates.get("USD"+from_cur)
     to_rate = rates.get("USD"+to_cur)
     if not from_rate:
@@ -110,10 +110,10 @@ def convert(from_cur, to_cur, amount, rates):
 
 
 def main():
-    logging.info("Started currency converter")
+    logging.debug("Started currency converter")
     print("Aleksan's Currency Converter (using data from currencylayer.com)\n")
 
-    logging.info('Updating available currencies set')
+    logging.debug('Updating available currencies set')
     valid_currency_codes_update()
     print('The set of currencies updated')
 
