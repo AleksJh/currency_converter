@@ -1,3 +1,5 @@
+![CI Status](https://github.com/AleksJh/currency_converter/actions/workflows/python.yml/badge.svg?branch=dev)
+
 This program is build with poetry. To run it use:
 $ poetry run python main.py
 
