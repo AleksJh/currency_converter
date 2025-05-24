@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 def parse_currency_codes_from_html(file_name):
     """ Parses an HTML file with a currency table and returns
     a set of currency codes. Should be called from main.py if needed."""
-    logging.info("Started parser function")
+    logging.debug("Started parser function")
     file_path = Path(__file__).parent / file_name
 
     with open(file_path, 'r', encoding='utf-8') as f:
