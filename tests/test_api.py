@@ -1,5 +1,5 @@
-import pytest
 from currency_app.main import get_exchange_rates
+
 
 def test_get_exchange_rates_success(mocker):
     fake_response = {
@@ -19,5 +19,3 @@ def test_get_exchange_rates_success(mocker):
 
     assert rates["USDGBP"] == 0.75
     assert rates["USDEUR"] == 0.9
-
-
