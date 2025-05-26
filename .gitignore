@@ -1,3 +1,4 @@
 .env
 .idea
-currency_converter.log
+*.log
+src/currency_app/__pycache__/
