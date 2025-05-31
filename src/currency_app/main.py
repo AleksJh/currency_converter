@@ -1,8 +1,10 @@
-from dotenv import load_dotenv
-import logging
 import os
 import sys
 import requests
+import logging
+from dotenv import load_dotenv
+from currency_app.secondary import parse_currency_codes_from_json
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -19,8 +21,7 @@ API_URL = "https://api.currencylayer.com/live"
 
 
 def valid_currency_codes_update():
-    from secondary import parse_currency_codes_from_html
-    new_codes = parse_currency_codes_from_html('cl-currencies-table.txt')
+    new_codes = parse_currency_codes_from_json('cl-currencies.json')
     VALID_CURRENCY_CODES.update(new_codes)
     logging.debug(f"Function finished. Added {len(new_codes)} new codes.")
 
