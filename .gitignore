@@ -1,4 +1,6 @@
 .env
-.idea
+.idea/
 *.log
+.vscode/
 src/currency_app/__pycache__/
+.pytest_cache/
