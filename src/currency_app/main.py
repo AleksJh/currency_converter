@@ -3,7 +3,7 @@ import sys
 import requests
 import logging
 from dotenv import load_dotenv
-from secondary import parse_currency_codes_from_json
+from currency_app.secondary import parse_currency_codes_from_json
 
 
 logging.basicConfig(
