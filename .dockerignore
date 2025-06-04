@@ -9,4 +9,4 @@ __pycache__/
 .gitignore
 .idea
 .vscode
-
+./src/currency_app/exchange_rates_cache.json

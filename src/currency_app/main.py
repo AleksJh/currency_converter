@@ -2,9 +2,13 @@ import os
 import sys
 import requests
 import logging
+import json
+from pathlib import Path
+from datetime import datetime
 from dotenv import load_dotenv
 from currency_app.secondary import parse_currency_codes_from_json
 
+CACHE_FILE = Path(__file__).parent / "exchange_rates_cache.json"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,28 +44,71 @@ def load_api_key():
     return key
 
 
-def get_exchange_rates(api_key, currencies):
-    logging.debug(f"Getting rates for: {currencies}")
+def get_exchange_rates(api_key: str, cache_file: Path) -> dict:
+    """
+    Returns a dictionary of exchange rates (quotes) from currencylayer.com.
+    Uses a local JSON cache file to avoid unnecessary API requests.
+
+    Workflow:
+    - If the cache file exists and was created today, use its data
+    - Otherwise, fetch new data from the API, cache it, and return it
+
+    Args:
+        api_key (str): Currencylayer API key
+        cache_file (Path): Path to the local JSON cache file
+
+    Returns:
+        dict: Dictionary of exchange rate quotes, e.g., {"USDEUR": 0.91, "USDJPY": 143.2}
+    """
+
+    def is_today(timestamp_str: str) -> bool:
+        """Returns True if the ISO timestamp is from today."""
+        try:
+            ts = datetime.fromisoformat(timestamp_str)
+            return ts.date() == datetime.now().date()
+        except Exception:
+            return False
+
+    if cache_file.exists():
+        try:
+            with open(cache_file, "r", encoding="utf-8") as f:
+                cache_data = json.load(f)
+            if "timestamp" in cache_data and is_today(cache_data["timestamp"]):
+                logging.info("Using cached exchange rates")
+                return cache_data["quotes"]
+            else:
+                logging.info("Cache is outdated, will refresh")
+        except Exception as e:
+            logging.warning(f"Failed to load cache: {e}")
+
+    # Fetch fresh data from the API
     params = {
         "access_key": api_key,
-        "currencies": ','.join(currencies),
         "format": 1
     }
 
     try:
-        logging.debug(f"Requesting exchange rates for: {currencies}")
-        response = requests.get(API_URL, params=params, timeout=10)
+        response = requests.get("https://api.currencylayer.com/live", params=params, timeout=10)
         data = response.json()
+
         if not data.get("success", False):
-            error_info = data.get("error", {}).get("info", "Unknown error")
-            logging.error(f"API returned error: {error_info}")
-            raise ValueError(error_info)
-        logging.info("Exchange rates received successfully.")
-        return data["quotes"]
+            raise ValueError(data.get("error", {}).get("info", "Unknown error"))
+
+        quotes = data["quotes"]
+
+        # Save to cache with timestamp
+        with open(cache_file, "w", encoding="utf-8") as f:
+            json.dump({
+                "timestamp": datetime.now().isoformat(),
+                "quotes": quotes
+            }, f)
+
+        logging.info("Cached new exchange rates")
+        return quotes
+
     except Exception as e:
-        logging.exception("Failed while fetching exchange rates")
-        print(f'Failed to get exchange rates: {e}')
-        sys.exit(1)
+        logging.critical(f"Could not fetch or cache exchange rates: {e}")
+        raise
 
 
 def validate_currency(code):
@@ -131,12 +178,8 @@ def main():
         return
 
     api_key = load_api_key()
-    needed_currencies = {from_cur, to_cur}
-    # x -> y : x->USD, then USD->y.
-    if "USD" not in needed_currencies:
-        needed_currencies.add("USD")
 
-    rates = get_exchange_rates(api_key, needed_currencies)
+    rates = get_exchange_rates(api_key, CACHE_FILE)
     result = convert(from_cur, to_cur, amount, rates)
 
     print(f'\n{amount} {from_cur} = {result} {to_cur}')
@@ -145,8 +188,6 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-# TODO: Add historic data
 
 # TODO: Github doesn't pull up the .env file. We need to come up with a script
 #  for this situation, with a check for the presence

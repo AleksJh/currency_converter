@@ -6,7 +6,7 @@
 
 This application is built using **Poetry**, a dependency management tool for Python.
 
-## Getting Started
+ Getting Started
 ---
 1.  **Install Poetry**: If you don't have Poetry installed, follow the instructions on their official website.
 2.  **Run the Application**: Once Poetry is set up, you can run the program using the following command from your project's root directory:
@@ -17,13 +17,13 @@ This application is built using **Poetry**, a dependency management tool for Pyt
 
 ---
 
-## API Usage and Limitations
+ API Usage and Limitations
 ---
 This program is primarily designed to work with a **free API key** from [CurrencyLayer](https://currencylayer.com/). Free API keys typically have limitations, such as only providing exchange rates from USD to other currencies. The program intelligently handles this by using a simple equation to calculate other cross-currency rates.
 
 ---
 
-## Currency Data
+ Currency Data
 ---
 The list of available currencies is parsed from the file located at:
 
@@ -33,3 +33,8 @@ The list of available currencies is parsed from the file located at:
 
 * If you obtain an updated currency list file, make sure to place it in the correct directory: `src/currency_app/`.
 * If the new file has a different name, you'll need to update the `valid_currency_codes_update()` function in `main.py` to reflect the new filename.
+
+
+### Version 0.2.1
+
+**Caching logic added.** Now this application will make an API request only once a day.

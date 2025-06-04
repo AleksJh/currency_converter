@@ -4,3 +4,4 @@
 .vscode/
 src/currency_app/__pycache__/
 .pytest_cache/
+./src/currency_app/exchange_rates_cache.json
