@@ -58,7 +58,8 @@ def get_exchange_rates(api_key: str, cache_file: Path) -> dict:
         cache_file (Path): Path to the local JSON cache file
 
     Returns:
-        dict: Dictionary of exchange rate quotes, e.g., {"USDEUR": 0.91, "USDJPY": 143.2}
+        dict: Dictionary of exchange rate quotes, e.g., {"USDEUR": 0.91,
+                                                        "USDJPY": 143.2}
     """
 
     def is_today(timestamp_str: str) -> bool:
@@ -88,11 +89,13 @@ def get_exchange_rates(api_key: str, cache_file: Path) -> dict:
     }
 
     try:
-        response = requests.get("https://api.currencylayer.com/live", params=params, timeout=10)
+        response = requests.get("https://api.currencylayer.com/live",
+                                params=params, timeout=10)
         data = response.json()
 
         if not data.get("success", False):
-            raise ValueError(data.get("error", {}).get("info", "Unknown error"))
+            raise ValueError(data.get("error", {}).get("info",
+                                                       "Unknown error"))
 
         quotes = data["quotes"]
 
