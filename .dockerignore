@@ -1,0 +1,12 @@
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+.env
+.git
+.gitignore
+.idea
+.vscode
+./src/currency_app/exchange_rates_cache.json
